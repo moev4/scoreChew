@@ -1,6 +1,7 @@
 package edu.moe;
 
 import edu.moe.imgAnalysis.Analyzer;
+import edu.moe.imgAnalysis.TesseractAnalyzer;
 import net.sourceforge.tess4j.TesseractException;
 
 import java.io.IOException;
@@ -13,10 +14,11 @@ public class Driver
 {
     public static void main( String[] args )
     {
-        Analyzer imgAnalyzer = new Analyzer();
+        Analyzer imgTesseractAnalyzer = new TesseractAnalyzer();
         try {
-            imgAnalyzer.executeOCR();
-        } catch (TesseractException | IOException e) {
+            String result = imgTesseractAnalyzer.executeOCR();
+            System.out.println(result);
+        } catch (IllegalStateException e) {
             e.printStackTrace();
         }
     }

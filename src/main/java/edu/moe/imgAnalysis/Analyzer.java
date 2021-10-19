@@ -1,13 +1,18 @@
 package edu.moe.imgAnalysis;
 
+import edu.moe.Driver;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import net.sourceforge.tess4j.util.LoadLibs;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Analyzer {
     public Analyzer(){
@@ -18,22 +23,41 @@ public class Analyzer {
         //TODO figure out how to give tesseract image for input
         //could be due to M1 - https://github.com/RaiMan/SikuliX1/issues/459
         String absImgPath = "/Users/moevaughan/Development/projects/java/scoreChew/src/main/resources/testImgs/weequahic_front_9.jpg";
-        String imgPath = "/testImgs/weequahic_front_9.jpg";
+//        String imgPath = "/testImgs/weequahic_front_9.jpg";
+        String imgPath = "/testImgs/index.png";
         String classLoadedPath = this.getClass().getResource(imgPath).getPath();
         File image = new File(classLoadedPath);
         BufferedImage picture;
         try
         {
             System.out.println("Class loaded path = " + classLoadedPath);
-            picture = ImageIO.read(this.getClass().getResource(imgPath));
+            //Extract tesseract dependencies.
+            extractTessDeps();
+//            picture = ImageIO.read(this.getClass().getResource(imgPath));
+//            Tesseract tesseract = new Tesseract();
+//            String path = ClassLoader.getSystemResource("tessdata").getPath();
+////        tesseract.setDatapath("src/main/resources/tessdata");
+//            tesseract.setDatapath(path);
+//            tesseract.setLanguage("eng");
+//            tesseract.setPageSegMode(1);
+//            tesseract.setOcrEngineMode(1);
+//            tesseract.doOCR(picture);
+
+
+
             Tesseract tesseract = new Tesseract();
-            String path = ClassLoader.getSystemResource("tessdata").getPath();
-//        tesseract.setDatapath("src/main/resources/tessdata");
-            tesseract.setDatapath(path);
             tesseract.setLanguage("eng");
-            tesseract.setPageSegMode(1);
             tesseract.setOcrEngineMode(1);
-            tesseract.doOCR(picture);
+            tesseract.setTessVariable("user_defined_dpi", "300");
+
+//            Path dataDirectory = Paths.get(ClassLoader.getSystemResource("data").toURI());
+            tesseract.setDatapath(ClassLoader.getSystemResource("testData").getPath());
+
+            BufferedImage image2 = ImageIO.read(Driver.class.getResourceAsStream(imgPath));
+            String result = tesseract.doOCR(image2);
+            System.out.println(result);
+
+
         }
         catch (IOException e)
         {
@@ -41,7 +65,9 @@ public class Analyzer {
             System.out.println("Current working directory : " + classLoadedPath);
             e.printStackTrace();
         }
-
-
+    }
+    public void extractTessDeps(){
+        File tmpFolder = LoadLibs.extractTessResources("win32-x86-64");
+        System.setProperty("java.library.path", tmpFolder.getPath());
     }
 }

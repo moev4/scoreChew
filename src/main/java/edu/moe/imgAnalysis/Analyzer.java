@@ -19,12 +19,12 @@ public class Analyzer {
 
     }
     public void executeOCR() throws TesseractException, IOException {
-//        File image = new File("src/main/resources/testImgs/weequahic_front_9.jpg");
-        //TODO figure out how to give tesseract image for input
-        //could be due to M1 - https://github.com/RaiMan/SikuliX1/issues/459
-        String absImgPath = "/Users/moevaughan/Development/projects/java/scoreChew/src/main/resources/testImgs/weequahic_front_9.jpg";
-//        String imgPath = "/testImgs/weequahic_front_9.jpg";
-        String imgPath = "/testImgs/index.png";
+        // M1 issues can be stemming from - https://github.com/RaiMan/SikuliX1/issues/459
+        //To fix for M1 do the following : In short, the problem is because tess4j-2.0.0.jar doesn't include MacOS
+        // library. So I just modified the maven cached jar on mine by doing these steps:
+        // https://stackoverflow.com/a/30724844/272071
+        String imgPath = "/testImgs/weequahic_front_9.jpg";
+        //String imgPath = "/testImgs/index.png";
         String classLoadedPath = this.getClass().getResource(imgPath).getPath();
         File image = new File(classLoadedPath);
         BufferedImage picture;
@@ -33,30 +33,15 @@ public class Analyzer {
             System.out.println("Class loaded path = " + classLoadedPath);
             //Extract tesseract dependencies.
             extractTessDeps();
-//            picture = ImageIO.read(this.getClass().getResource(imgPath));
-//            Tesseract tesseract = new Tesseract();
-//            String path = ClassLoader.getSystemResource("tessdata").getPath();
-////        tesseract.setDatapath("src/main/resources/tessdata");
-//            tesseract.setDatapath(path);
-//            tesseract.setLanguage("eng");
-//            tesseract.setPageSegMode(1);
-//            tesseract.setOcrEngineMode(1);
-//            tesseract.doOCR(picture);
-
-
-
             Tesseract tesseract = new Tesseract();
             tesseract.setLanguage("eng");
             tesseract.setOcrEngineMode(1);
             tesseract.setTessVariable("user_defined_dpi", "300");
-
-//            Path dataDirectory = Paths.get(ClassLoader.getSystemResource("data").toURI());
             tesseract.setDatapath(ClassLoader.getSystemResource("testData").getPath());
 
             BufferedImage image2 = ImageIO.read(Driver.class.getResourceAsStream(imgPath));
             String result = tesseract.doOCR(image2);
             System.out.println(result);
-
 
         }
         catch (IOException e)
@@ -67,6 +52,7 @@ public class Analyzer {
         }
     }
     public void extractTessDeps(){
+        //This only works on windows/linux for m1 you must brew install tesseract directly and pull from there.
         File tmpFolder = LoadLibs.extractTessResources("win32-x86-64");
         System.setProperty("java.library.path", tmpFolder.getPath());
     }
